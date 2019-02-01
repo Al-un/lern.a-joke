@@ -1,0 +1,10 @@
+{
+  "name": "lern.a-joke",
+  "version": "0.1.0",
+  "description": "Sharing React component with Lerna and Yarn workspaces",
+  "main": "index.js",
+  "repository": "https://github.com/Al-un/lern.a-joke.git",
+  "author": "Al-un <alun.sng@gmail.com>",
+  "license": "MIT",
+  "private": true
+}

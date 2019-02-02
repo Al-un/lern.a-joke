@@ -6,5 +6,20 @@
   "repository": "https://github.com/Al-un/lern.a-joke.git",
   "author": "Al-un <alun.sng@gmail.com>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "lerna": "^3.10.7"
+  },
+  "scripts": {
+    "lerna:clean": "lerna clean --yes",
+    "start:chuck": "cd packages/chucknorrisapp && yarn start"
+  },
+  "dependencies": {
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "styled-components": "^4.1.3"
+  }
 }

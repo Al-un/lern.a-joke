@@ -1,5 +1,0 @@
-- create react app
-- add pure component with default props
-- add proptypes check
-- add redux+saga (using `fetch`)
-- styled-components

@@ -90,7 +90,7 @@ dependencies.
 - Remove dependencies from _chucknorrisapp_:
   - `yarn remove react react-dom styled-components`
 - Add it to the root _package.json_:
-  - `yarn add -W react react-dom styled-components`
+  - `yarn add -W --dev react react-dom styled-components`
 - Add a [_lerna:clean_](https://github.com/lerna/lerna/tree/master/commands/clean) at the root _package.json_:
   - `"lerna:clean": "lerna clean"`
 - Clean `node_modules` folders and reinstall dependencies:
@@ -109,3 +109,159 @@ Time to isolate some pure component such as `Joke` or `JokeList`.
   - _src/index.js_: exporting all shared elements
   - _src/components/_: shared components
   - _src/redux/_: shared redux elements
+  - _src/styles/_: shared styles elements
+
+Let's start with the easy one: joke ducks. All jokes application will need to
+fetch jokes so it is common. Create a `src/redux/joke.ducks.js` and copy the
+content from the file with the same name from `chucknorrisapp`
+
+Proceed similarly with `src/components/Joke.js` and `src/components/JokeList.js`
+except that only pure components are shared. Do not copy Redux related code.
+
+Do it also for `src/styles/index.js`.
+
+> As components are re-exported, do not rely on `export default` and make sure
+> that all required elements are exported.
+
+Export everything in `src/index.js`:
+
+```js
+export { Joke } from './components/Joke';
+export { JokeList } from './components/JokeList';
+export {
+  JOKE_REQUEST,
+  JOKE_LOADED,
+  JOKE_CLEAR,
+  requestJokes,
+  clearJokes,
+  jokeReducer
+} from './redux/joke.ducks';
+```
+
+You need first to babel-transpile such components before using it in the ChuckNorrisApp.
+Time to add some dependencies on _shared-components_:
+
+- The babel team
+  ```
+  yarn add --dev @babel/cli @babel/core @babel/preset-env @babel/preset-react
+  ```
+- Add a `shared-components/.babelrc`:
+  ```json
+  {
+    "presets": ["@babel/preset-env", "@babel/preset-react"]
+  }
+  ```
+- The testing team:
+  ```
+  yarn add --dev jest babel-jest enzyme enzyme-adapter-react-16
+  ```
+- For convenience, add this to the root _package.json_:
+  ```
+  yarn add --dev -W del-cli
+  ```
+- Add the following scripts in shared-components _package.json_:
+  ```json
+  {
+    "scripts": {
+      "prebuild": "del-cli dist",
+      "build": "babel src -d dist --ignore \"src/**/*.spec.js\",\"src/**/*.stories.js\"",
+      "test": "jest"
+    }
+  }
+  ```
+  We are not writing test files nor stories files yet. You can also add those
+  scripts in the root _package.json_ for convenience:
+  ```json
+  {
+    "scripts:" {
+      "prebuild": "lerna exec --parallel -- del-cli dist",
+      "build": "lerna exec --scope shared-components -- babel src -d dist --ignore \"src/**/*.spec.js\",\"src/**/*.stories.js\""
+    }
+  }
+  ```
+- For the tests we are going to write, add Jest setup in _package.json_:
+
+  ```json
+  {
+    "jest": {
+      "setupFiles": ["setupJest.js"]
+    }
+  }
+  ```
+
+  add create a `shared-components/setupJest.js`:
+
+  ```js
+  const enzyme = require('enzyme');
+  const Adapter = require('enzyme-adapter-react-16');
+  enzyme.configure({ adapter: new Adapter() });
+  ```
+
+  > About `setupJest.js`:
+  >
+  > - `require` syntax is used to avoid requiring transpiling this file
+  > - File is located at the root of the packages instead of the root of the
+  >   project. This is debatable as such file can be defined at the root of the
+  >   workspace. If doing so, then all test related dependencies must be moved
+  >   at root workspace level
+
+- Check that babel is working: `yarn build`. Output should look like:
+  ```
+  $ del-cli dist
+  $ babel src -d dist --ignore "src/**/*.spec.js","src/**/*.stories.js"
+  Successfully compiled 4 files with Babel.
+  Done in 1.96s.
+  ```
+
+### Using shared components
+
+Let's go back to our ChuckNorrisApp:
+
+- Remove `src/components/Joke.js`
+- In `src/components/JokeList.js`, remove `PureJokeList` and import in from `shared-components`:
+
+  ```js
+  import { connect } from 'react-redux';
+  import { JokeList, requestJokes } from 'shared-components';
+
+  const mapStateToProps = state => ({ jokes: state.jokes });
+
+  const mapDispatchToProps = dispatch => {
+    return {
+      load: () => dispatch(requestJokes())
+    };
+  };
+
+  export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(JokeList);
+  ```
+
+- Similarly, in `src/redux/configureStore.js`, use the shared `jokeReducer` and delete `src/redux/joke.ducks.js`:
+
+  ```js
+  import { createStore, applyMiddleware } from 'redux';
+  import createSagaMiddleware from 'redux-saga';
+
+  import { jokeReducer } from 'shared-components';
+  import jokeSagas from './joke.sagas';
+
+  const sagaMiddleware = createSagaMiddleware();
+
+  // init Redux store
+  const store = createStore(jokeReducer, applyMiddleware(sagaMiddleware));
+
+  // Run Sagas
+  sagaMiddleware.run(jokeSagas);
+
+  export default store;
+  ```
+  Don't forget to update `joke.sagas.js` as well:
+  ```diff
+  - import { JOKE_LOADED, JOKE_REQUEST, JOKE_CLEAR } from './joke.ducks';
+  + import { JOKE_LOADED, JOKE_REQUEST, JOKE_CLEAR } from 'shared-components';
+  ```
+
+- `src/styles/index.js` can be removed
+- Fasten your seat belt, `yarn start` and :tada: :tada:

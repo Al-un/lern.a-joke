@@ -11,15 +11,17 @@
     "packages/*"
   ],
   "devDependencies": {
-    "lerna": "^3.10.7"
-  },
-  "scripts": {
-    "lerna:clean": "lerna clean --yes",
-    "start:chuck": "cd packages/chucknorrisapp && yarn start"
-  },
-  "dependencies": {
+    "del-cli": "^1.1.0",
+    "lerna": "^3.10.7",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "styled-components": "^4.1.3"
-  }
+  },
+  "scripts": {
+    "lerna:clean": "lerna clean --yes",
+    "prebuild": "lerna exec --parallel -- del-cli dist",
+    "build": "lerna exec --scope shared-components -- babel src -d dist --ignore \"src/**/*.spec.js\",\"src/**/*.stories.js\"",
+    "start:chuck": "cd packages/chucknorrisapp && yarn start"
+  },
+  "dependencies": {}
 }

@@ -1,6 +1,6 @@
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-import { JOKE_LOADED, JOKE_REQUEST, JOKE_CLEAR } from './joke.ducks';
+import { JOKE_LOADED, JOKE_REQUEST, JOKE_CLEAR } from 'shared-components';
 
 // ---------- Saga
 export default function* watchJokes() {

@@ -1,0 +1,35 @@
+{
+  "name": "shared-components",
+  "version": "1.0.0",
+  "description": "Shared joke components",
+  "author": "Al-un <alun.sng@gmail.com>",
+  "license": "ISC",
+  "main": "dist/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "prebuild": "del-cli dist",
+    "build": "babel src -d dist --ignore \"src/**/*.spec.js\",\"src/**/*.stories.js\"",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
+    "babel-jest": "^24.0.0",
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.8.0",
+    "jest": "^24.0.0"
+  },
+  "jest": {
+    "setupFiles": [
+      "setupJest.js"
+    ]
+  }
+}
